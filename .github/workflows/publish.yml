@@ -1,0 +1,12 @@
+name: Publish shared library
+
+on:
+  workflow_dispatch :
+  push:
+    branches:
+      - master
+
+jobs:
+  publish:
+    uses: ToolOps/reusable-workflows/.github/workflows/helm-release-workflow.yml@main
+    secrets: inherit
