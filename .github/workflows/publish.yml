@@ -10,7 +10,7 @@ on:
 
 jobs:
   publish:
-    uses: ToolOps/reusable-workflows/.github/reusable_workflows/helm-release-workflow.yml@v0.0.1
+    uses: ToolOps/reusable-workflows/.github/workflows/helm-release-workflow.yml@v0.0.2
     with:
       chart_name: shared-library
     secrets: inherit
