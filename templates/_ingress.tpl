@@ -1,4 +1,4 @@
-{{- if .Values.ingress.enabled -}}
+{{- define "shared-library.ingress" -}}
 {{- $fullName := include "shared-library.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
 {{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}

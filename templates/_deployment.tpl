@@ -2,87 +2,84 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-deployment
+  name: {{ include "shared-library.fullname" . }}
   labels:
-  {{- include "shared-library.labels" . | nindent 4 }}
+    {{- include "shared-library.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.deployment.replicas }}
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
       {{- include "shared-library.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      labels:
-        app: {{ .Release.Name }}
-        environment: {{ .Values.environment }}
-        {{- include "shared-library.selectorLabels" . | nindent 8 }}
-      {{- if .Values.config }}
+      {{- if or (.Values.podAnnotations) (.Values.config) }}
       annotations:
-        checksum/config: {{ include ("shared-library.configmap") . | sha256sum }}
-      {{- end }}
-    spec:
-      {{- if .Values.deployment.affinity }}
-      affinity:
-        {{- toYaml .Values.deployment.affinity | nindent 8 -}}
-      {{- end }}
-      containers:
-      - name: {{ .Release.Name }}
-        {{- if .Values.deployment.env}}
-        env:
-        {{- if .Values.deployment.env -}}
-        {{- range $k, $v := .Values.deployment.env }}
-        - name: {{ $k }}
-          value: {{ quote $v }}
-        {{- end -}}
+        {{- if .Values.podAnnotations }}
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
         {{- end }}
-      {{- end -}}
-        image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag | default .Chart.AppVersion }}
-        imagePullPolicy: {{ .Values.deployment.imagePullPolicy }}
-        {{- if .Values.deployment.startupProbe }}
-        startupProbe: {{- toYaml .Values.deployment.startupProbe | nindent 10 }}
-        {{- end }}
-        {{- if .Values.deployment.readinessProbe }}
-        readinessProbe: {{- toYaml .Values.deployment.readinessProbe | nindent 10 }}
-        {{- end }}
-        {{- if .Values.deployment.livenessProbe }}
-        livenessProbe: {{- toYaml .Values.deployment.livenessProbe | nindent 10 }}
-        {{- end }}
-        {{- if .Values.deployment.ports }}
-        ports: {{- toYaml .Values.deployment.ports | nindent 8 }}
-        {{- end }}
-        {{- if .Values.deployment.resources }}
-        resources: {{- toYaml .Values.deployment.resources | nindent 10 }}
-        {{- end }}
-        {{- if .Values.deployment.containerSecurityContext }}
-        securityContext: {{- toYaml .Values.deployment.containerSecurityContext | nindent 10 }}
-        {{- end }}
-        {{- if or (.Values.deployment.volumeMounts) (.Values.config) }}
-        volumeMounts:
         {{- if .Values.config }}
-        - mountPath: {{ .Values.config.mountPath }}
-          name: {{ .Release.Name }}-config
-        {{- end -}}
-        {{- if .Values.deployment.volumeMounts }}
-        {{- toYaml .Values.deployment.volumeMounts | nindent 8 }}
-        {{- end -}}
+        checksum/config: {{ include ("shared-library.configmap") . | sha256sum}}
         {{- end }}
-      {{- if .Values.deployment.imagePullSecret }}
+      {{- end }}
+      labels:
+        {{- include "shared-library.labels" . | nindent 8 }}
+	{{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-      - name: {{ .Values.deployment.imagePullSecret }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if .Values.deployment.tolerations }}
-      tolerations: {{- toYaml .Values.deployment.tolerations | nindent 6 }}
-      {{- end }}
-      {{- if or (.Values.volumes) (.Values.config) }}
+      serviceAccountName: {{ include "shared-library.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.environment }}
+          env:
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          ports:
+          {{- range .Values.service.ports }}
+          - containerPort: {{ .port }}
+          {{- end -}}
+          {{- if .Values.startupProbe }}
+          startupProbe: {{- toYaml .Values.startupProbe | nindent 10 }}
+          {{- end }}
+          {{- if .Values.readinessProbe }}
+          readinessProbe: {{- toYaml .Values.readinessProbe | nindent 10 }}
+          {{- end }}
+          {{- if .Values.livenessProbe }}
+          livenessProbe: {{- toYaml .Values.livenessProbe | nindent 10 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.volumes }}
       volumes:
-      {{- if .Values.config }}
-      - configMap:
-          name: {{ .Release.Name }}-configmap
-        name: {{ .Release.Name }}-config
-      {{- end -}}
-      {{- if .Values.volumes -}}
-      {{- toYaml .Values.volumes | nindent 6 }}
-      {{- end -}}
-      {{- end -}}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
 {{- end -}}
