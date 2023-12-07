@@ -2,7 +2,7 @@ apiVersion: v2
 name: shared-library
 description: Library with HELM templates
 type: library
-version: 0.1.10
+version: 0.1.11
 home: https://github.com/ToolOps/helm-shared-library
 icon: https://helm.sh/img/helm.svg
 sources: [
