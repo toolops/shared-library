@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-configmap
+  name: {{ include "shared-library.fullname" . }}
   labels:
   {{- include "shared-library.labels" . | nindent 4 }}
 data: 

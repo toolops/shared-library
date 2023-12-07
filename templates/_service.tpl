@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-service
+  name: {{ include "shared-library.fullname" . }}
   labels:
     {{- include "shared-library.labels" . | nindent 4 }}
 spec:

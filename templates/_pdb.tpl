@@ -2,7 +2,7 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ .Release.Name }}-pdb
+  name: {{ include "shared-library.fullname" . }}
   labels:
     {{- include "shared-library.labels" . | nindent 4 }}
 spec:
