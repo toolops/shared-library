@@ -4,5 +4,8 @@ kind: Secret
 metadata:
   name: {{ include "shared-library.fullname" . }}
 type: Opaque
-stringData: {{- toYaml .Values.secrets | nindent 2 -}}
+stringData:
+{{- range $k, $v := .Values.secrets }}
+  {{ $k }}: {{ quote $v }}
+{{- end -}}
 {{- end -}}
