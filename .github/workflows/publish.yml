@@ -10,9 +10,9 @@ on:
 
 jobs:
   lint:
-    uses: ToolOps/reusable-workflows/.github/workflows/helm-lint.yml@v0.0.40
+    uses: ToolOps/reusable-workflows/.github/workflows/helm-lint.yml@v0.0.42
   publish:
-    uses: ToolOps/reusable-workflows/.github/workflows/helm-release.yml@v0.0.40
+    uses: ToolOps/reusable-workflows/.github/workflows/helm-release.yml@v0.0.42
     with:
       chart_name: shared-library
     secrets: inherit
