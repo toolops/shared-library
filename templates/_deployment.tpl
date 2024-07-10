@@ -46,9 +46,13 @@ spec:
           env:
           {{- toYaml . | nindent 10 }}
           {{- end }}
+          {{- with .Values.ports }}
           ports:
-          {{- range .Values.service.ports }}
-          - containerPort: {{ .port }}
+          {{- range . }}
+          - containerPort: {{ .containerPort }}
+            name: {{ .name }}
+            protocol: {{ .protocol | upper }}
+          {{- end -}}
           {{- end -}}
           {{- if .Values.startupProbe }}
           startupProbe: {{- toYaml .Values.startupProbe | nindent 10 }}

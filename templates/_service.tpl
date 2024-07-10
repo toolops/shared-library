@@ -9,6 +9,13 @@ spec:
   type: {{ .Values.service.type }}
   selector:
     {{- include "shared-library.selectorLabels" . | nindent 4 }}
+  {{- with .Values.ports }}
   ports:
-	{{- .Values.service.ports | toYaml | nindent 2 -}}
+  {{- range . }}
+  - name: {{ .name }}
+    port: {{ .servicePort }}
+    protocol: {{ .protocol | upper }}
+    targetPort: {{ .containerPort }}
+	{{- end }}
+  {{- end }}
 {{- end }}
